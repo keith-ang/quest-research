@@ -1,6 +1,4 @@
-Here's the complete README in Markdown format:
-
-# STORM Report Generator
+# Quest Research
 
 ## Overview
 
