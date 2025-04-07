@@ -2,7 +2,7 @@
 
 ## Overview
 
-STORM Report Generator is a full-stack web application built to generate comprehensive, research-backed reports on any topic. The application leverages advanced language models and search capabilities to create well-structured reports with proper citations.
+Quest Research is a full-stack web application built to generate comprehensive, research-backed reports on any topic. The application leverages advanced language models and search capabilities to create well-structured reports with proper citations.
 
 The system is built with a modern tech stack, featuring a Next.js 15 frontend with a clean, responsive UI and a Python FastAPI backend that powers the report generation engine. The application supports user authentication, report generation, viewing, and downloading.
 
@@ -45,7 +45,7 @@ The project follows a modular architecture with two main components:
 
 ### Prerequisites
 
--   Node.js (v18+)
+-   Node.js (v20.18.3 recommended)
 -   Python (v3.10+)
 -   MongoDB connection
 -   Clerk API keys + Set up Clerk Webhook
