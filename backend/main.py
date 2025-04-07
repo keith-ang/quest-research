@@ -1,8 +1,9 @@
+from models import ArticleCreate, ArticleResponse
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
-from pydantic import BaseModel
+
 import os
 import json
 import re
@@ -113,8 +114,7 @@ except Exception as e:
     logger.error(traceback.format_exc())
     # We'll continue and let the app start, but endpoints will fail if runner isn't initialized
 
-class ArticleCreate(BaseModel):
-    topic: str
+
 
 def process_references(content: str, topic_dir: str) -> str:
     """Process and insert references into the article content."""
@@ -159,7 +159,7 @@ async def create_article(article_create: ArticleCreate):
         # Generate article content using STORM
         logger.info(f"Starting STORM runner for topic: {article_create.topic}")
         runner.run(
-            topic=safe_topic,
+            topic=safe_topic.replace("_", " "),
             do_research=True,
             do_generate_outline=True,
             do_generate_article=True,
@@ -213,11 +213,13 @@ async def create_article(article_create: ArticleCreate):
         logger.info(f"Successfully processed article for topic: {article_create.topic}")
         
         # Return custom response format
-        return {
-            "raw_content": raw_content,
-            "processed_content": processed_content,
-            "references": references
-        }
+        return ArticleResponse(
+            raw_content=raw_content,
+            processed_content=processed_content,
+            references=references
+        )
+            
+        
     except Exception as e:
         logger.error(f"Error creating article: {str(e)}")
         logger.error(traceback.format_exc())
