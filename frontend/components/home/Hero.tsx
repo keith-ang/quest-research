@@ -9,7 +9,7 @@ const Hero = () => {
 	return (
 		<section
 			id="#hero"
-			className="min-h-screen mx-auto flex flex-col items-center justify-center  sm:py-16 lg:pb-28 lg:px-12 max-w-7xl"
+			className=" mx-auto flex flex-col items-center justify-center h-full max-w-7xl"
 		>
 			<div className="flex flex-col items-center justify-center px-2">
 				<div className="relative p-[3px] overflow-hidden rounded-full bg-linear-to-r from-violet-500 to-violet-800 animate-gradient-x group">
@@ -37,7 +37,7 @@ const Hero = () => {
 					variant="link"
 					className="mt-6 sm:text-lg lg:text-xl rounded-full px-8 py-6 sm:px-10 lg:px-12 sm:py-7 lg:py-8  bg-linear-to-r from-slate-500  via-violet-500 to-violet-700 hover:no-underline hover:scale-105 font-bold border-2 border-gray-100 ring-violet-500 ring-2 transition-all duration-300"
 				>
-					<Link href="/#pricing" className="flex gap-2 items-center">
+					<Link href="/dashboard" className="flex gap-2 items-center">
 						<span className="text-gray-200 text-xl md:text-2xl">
 							Try {APP_NAME} {APP_NAME2}
 						</span>

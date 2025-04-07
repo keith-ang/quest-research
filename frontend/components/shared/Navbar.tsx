@@ -13,7 +13,7 @@ interface MenuOpenProps {
 
 export default function Navbar({ setMenuOpen }: MenuOpenProps) {
 	return (
-		<div className="w-full shadow-md shadow-gray-40 dark:shadow-gray-700">
+		<div className="w-full shadow-md shadow-gray-40 dark:shadow-gray-700 backdrop-blur-3xl">
 			<nav className="container flex items-center justify-between py-4 px-4 md:px-10 mx-auto max-w-7xl">
 				<div className="flex md:flex-1">
 					<NavLink
@@ -44,8 +44,8 @@ export default function Navbar({ setMenuOpen }: MenuOpenProps) {
 						</Button>
 					</div>
 					<div className="hidden sm:flex gap-4 md:gap-6 lg:gap-10 justify-center items-center">
-						<NavLink href="/#features">Features</NavLink>
-						<NavLink href="/#pricing">Pricing</NavLink>
+						{/* <NavLink href="/#features">Features</NavLink>
+						<NavLink href="/#pricing">Pricing</NavLink> */}
 						<SignedIn>
 							<NavLink href="/dashboard">Dashboard</NavLink>
 						</SignedIn>

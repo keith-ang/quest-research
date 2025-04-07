@@ -75,7 +75,7 @@ export async function POST(
 		console.log("Processing report with topic:", formData.topic);
 
 		// Call FastAPI route to generate report content and references
-		const apiResponse = await fetch("http://localhost:8000/api/articles", {
+		const apiResponse = await fetch(`${process.env.STORM_API_URL || "http://localhost:8000"}/api/articles`, {
 			method: "POST",
 			headers: {
 				"Content-Type": "application/json",

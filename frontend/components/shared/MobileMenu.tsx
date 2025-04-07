@@ -44,7 +44,7 @@ export default function MobileMenu({ menuOpen, setMenuOpen }: MobileMenuProps) {
 				</SheetHeader>
 
 				<div className="flex flex-col gap-6 py-2 px-4">
-					<NavLink
+					{/* <NavLink
 						href="/#features"
 						className="px-1 py-2 text-lg"
 						onClick={() => setMenuOpen(false)}
@@ -58,7 +58,7 @@ export default function MobileMenu({ menuOpen, setMenuOpen }: MobileMenuProps) {
 						onClick={() => setMenuOpen(false)}
 					>
 						Pricing
-					</NavLink>
+					</NavLink> */}
 
 					<SignedIn>
 						<NavLink
