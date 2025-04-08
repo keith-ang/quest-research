@@ -1,13 +1,14 @@
-FROM python:3.12.9
+FROM python:3.10
 
-# Set working directory
 WORKDIR /app
 
-# Copy requirements file from root directory
+# Copy requirements file but prepare to handle errors
 COPY requirements.txt .
 
-# Install dependencies
-RUN pip install --no-cache-dir -r requirements.txt
+# Install dependencies, filtering out Windows-specific packages
+RUN pip install --no-cache-dir --upgrade pip && \
+    grep -v "pywin32" requirements.txt > requirements-linux.txt && \
+    pip install --no-cache-dir -r requirements-linux.txt
 
 # Copy the backend directory
 COPY ./backend ./backend
