@@ -1,0 +1,33 @@
+services:
+    backend:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        ports:
+            - "8000:8000"
+        volumes:
+            - ./backend:/app/backend
+        environment:
+            - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
+            - AZURE_API_KEY=${AZURE_API_KEY}
+            - AZURE_API_BASE=${AZURE_API_BASE}
+            - AZURE_API_VERSION=${AZURE_API_VERSION}
+            - SERPER_API_KEY=${SERPER_API_KEY}
+
+    frontend:
+        build:
+            context: ./frontend
+            dockerfile: Dockerfile
+        ports:
+            - "3000:3000"
+        volumes:
+            - ./frontend:/app
+            - /app/node_modules
+        environment:
+            - NODE_ENV=${NODE_ENV}
+            - STORM_API_URL=http://backend:8000
+            - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+            - CLERK_SECRET_KEY=${CLERK_SECRET_KEY}
+            - CLERK_WEBHOOK_SECRET=${CLERK_WEBHOOK_SECRET}
+        depends_on:
+            - backend
