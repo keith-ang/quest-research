@@ -7,13 +7,18 @@ import Report from "@/lib/db/models/report.model";
 import mongoose from "mongoose";
 import { currentUser } from "@clerk/nextjs/server";
 
+interface ReportParams {
+	params: Promise<{ reportId: string }>;
+}
+
 // updates the initial report object with the content and references if report from backend is generated successfully
 export async function POST(
 	request: Request,
-	{ params }: { params: { reportId: string } }
-) {
+	{ params }: ReportParams
+): Promise<Response> {
 	try {
-		const { reportId } = await params;
+		const resolvedParams = await params;
+		const { reportId } = resolvedParams;
 		await connectToDatabase();
 
 		const user = await currentUser();
@@ -75,16 +80,21 @@ export async function POST(
 		console.log("Processing report with topic:", formData.topic);
 
 		// Call FastAPI route to generate report content and references
-		const apiResponse = await fetch(`${process.env.STORM_API_URL || "http://localhost:8000"}/api/articles`, {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify({
-				topic: formData.topic,
-				// can add more params in future
-			}),
-		});
+		const apiResponse = await fetch(
+			`${
+				process.env.STORM_API_URL || "http://localhost:8000"
+			}/api/articles`,
+			{
+				method: "POST",
+				headers: {
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					topic: formData.topic,
+					// can add more params in future
+				}),
+			}
+		);
 
 		if (!apiResponse.ok) {
 			const errorData = await apiResponse.json();

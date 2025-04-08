@@ -1,38 +1,39 @@
-// app/api/reports/[reportId]/route.ts
 import { NextResponse } from "next/server";
 import { connectToDatabase } from "@/lib/db";
 import Report from "@/lib/db/models/report.model";
 import mongoose from "mongoose";
 import { currentUser } from "@clerk/nextjs/server";
 
-// deletes initial report object that was created if report fails to generate
+// Define the params type to match Next.js 15's expectations
+interface ReportParams {
+	params: Promise<{ reportId: string }>;
+}
+
+// Deletes the initial report object if report generation fails
 export async function DELETE(
 	request: Request,
-	{ params }: { params: { reportId: string } }
-) {
+	{ params }: ReportParams
+): Promise<Response> {
 	try {
-		const { reportId } = await params;
+		// Extract reportId by awaiting the params promise
+		const resolvedParams = await params;
+		const { reportId } = resolvedParams;
+
 		await connectToDatabase();
 
 		const user = await currentUser();
 		if (!user) {
 			return NextResponse.json(
-				{
-					success: false,
-					message: "Authentication required",
-				},
+				{ success: false, message: "Authentication required" },
 				{ status: 401 }
 			);
 		}
-		const clerkUserId = user?.id;
+		const clerkUserId = user.id;
 
 		// Validate the report ID
 		if (!mongoose.Types.ObjectId.isValid(reportId)) {
 			return NextResponse.json(
-				{
-					success: false,
-					message: "Invalid report ID",
-				},
+				{ success: false, message: "Invalid report ID" },
 				{ status: 400 }
 			);
 		}
@@ -40,7 +41,7 @@ export async function DELETE(
 		// Delete the report if it exists and belongs to the user
 		const result = await Report.deleteOne({
 			_id: reportId,
-			clerkUserId: clerkUserId,
+			clerkUserId,
 		});
 
 		if (result.deletedCount === 0) {
