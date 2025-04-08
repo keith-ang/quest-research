@@ -78,23 +78,20 @@ export async function POST(
 		const formData: IReportForm = parseResult.data;
 
 		console.log("Processing report with topic:", formData.topic);
+		const apiUrl = process.env.STORM_API_URL || "http://localhost:8000";
+		console.log(`Calling API URL: ${apiUrl}`);
 
 		// Call FastAPI route to generate report content and references
-		const apiResponse = await fetch(
-			`${
-				process.env.STORM_API_URL || "http://localhost:8000"
-			}/api/articles`,
-			{
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					topic: formData.topic,
-					// can add more params in future
-				}),
-			}
-		);
+		const apiResponse = await fetch(`${apiUrl}/api/articles`, {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				topic: formData.topic,
+				// can add more params in future
+			}),
+		});
 
 		if (!apiResponse.ok) {
 			const errorData = await apiResponse.json();
