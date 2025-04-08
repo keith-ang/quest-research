@@ -1,4 +1,4 @@
-FROM python:3.10
+FROM python:3.12.9
 
 # Set working directory
 WORKDIR /app
@@ -16,5 +16,4 @@ COPY ./backend ./backend
 EXPOSE 8000
 
 # Command to run the application
-# Since main.py is directly in the backend folder
 CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
