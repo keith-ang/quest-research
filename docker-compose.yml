@@ -7,12 +7,15 @@ services:
             - "8000:8000"
         volumes:
             - ./backend:/app/backend
+            - ./backend/storage:/app/backend/storage
         environment:
             - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
             - AZURE_API_KEY=${AZURE_API_KEY}
             - AZURE_API_BASE=${AZURE_API_BASE}
             - AZURE_API_VERSION=${AZURE_API_VERSION}
             - SERPER_API_KEY=${SERPER_API_KEY}
+        networks:
+            - app-network
 
     frontend:
         build:
@@ -32,3 +35,9 @@ services:
             - MONGODB_URI=${MONGODB_URI}
         depends_on:
             - backend
+        networks:
+            - app-network
+
+networks:
+    app-network:
+        driver: bridge

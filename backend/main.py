@@ -1,4 +1,4 @@
-from models import ArticleCreate, ArticleResponse
+from .models import ArticleCreate, ArticleResponse
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
