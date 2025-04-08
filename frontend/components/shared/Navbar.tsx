@@ -54,26 +54,14 @@ export default function Navbar({ setMenuOpen }: MenuOpenProps) {
 							<UserButton />
 						</SignedIn>{" "}
 						<SignedOut>
-							{/* <div className="">
+							<div className="">
 								<NavLink
 									href="/sign-in"
 									className="border-2 border-gray-200 py-1 px-1 sm:px-2 rounded-4xl"
 								>
 									Sign In
 								</NavLink>
-							</div> */}
-							<SignInButton
-								mode="modal"
-								fallbackRedirectUrl={"/dashboard"}
-								forceRedirectUrl={"/dashboard"}
-							>
-								<Button
-									className="group inline-flex rounded-3xl w-20 lg:w-28 cursor-pointer justify-center items-center bg-gradient-to-r from-violet-800 to-violet-500 hover:from-violet-500 hover:to-violet-800
-						dark:from-gray-200 dark:to-gray-100 dark:hover:from-gray-300 dark:hover:to-gray-200 transition-all duration-300 shadow-lg hover:shadow-xl leading-relaxed"
-								>
-									Sign In
-								</Button>
-							</SignInButton>
+							</div>
 						</SignedOut>
 					</div>
 				</div>
