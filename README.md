@@ -24,6 +24,7 @@ The project follows a modular architecture with two main components:
 -   **UI Components**: Tailwind CSS v4 + shadcn/ui
 -   **Form Validation**: Zod
 -   **Styling**: Tailwind CSS v4
+-   **Real-time Updates**: WebSocket connection
 
 #### Backend
 
@@ -31,6 +32,7 @@ The project follows a modular architecture with two main components:
 -   **Report Generation**: STORM Wiki Runner
 -   **Language Model**: Azure OpenAI (GPT-4o)
 -   **Search Engine**: Serper API
+-   **WebSocket Server**: Native FastAPI WebSockets
 
 ## Features
 
@@ -40,6 +42,7 @@ The project follows a modular architecture with two main components:
 -   **Interactive Reading**: Toggle between full report and section-by-section viewing
 -   **Report Management**: View, download, and delete reports
 -   **Citation Support**: All reports include proper citations with links to sources
+-   **Chunked Data Transfer**: Large reports are sent in manageable chunks to avoid payload size limits
 
 ## Getting Started
 
@@ -55,12 +58,14 @@ The project follows a modular architecture with two main components:
 
 ### Environment Setup
 
-The project uses a central `.env` file in the project root with the following variables:
+The project uses a central `.env` file in the project root. Copy the `.env.example` file to create your own `.env` file:
 
 ```
 NODE_ENV=development
+NEXT_PUBLIC_APP_URL=Your application's public URL (default: http://localhost:3000)
+NEXT_PUBLIC_STORM_API_URL=URL for the backend API (default: http://localhost:8000)
+
 # Frontend (Next.js) Environment Variables
-NEXT_PUBLIC_APP_URL=your_public_app_url
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your_clerk_publishable_key
 CLERK_SECRET_KEY=your_clerk_secret_key
 CLERK_WEBHOOK_SECRET=your_clerk_webhook_secret
