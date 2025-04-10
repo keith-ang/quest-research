@@ -128,8 +128,14 @@ export function useWebSocket(): UseWebSocketReturn {
 			}
 
 			reportIdRef.current = reportId;
-			const host = getHost();
-			const wsUrl = `${window.location.protocol === "https:" ? "wss:" : "ws:"}//${host}/ws/reports/${reportId}`;
+			const fullHost = getHost();
+			const protocol = fullHost.includes("https") ? "wss:" : "ws:";
+			const cleanHost = fullHost
+				.replace("http://", "")
+				.replace("https://", "");
+			const wsUrl = `${protocol}//${cleanHost}/ws/reports/${reportId}`;
+
+			// console.log("WS URL: ", wsUrl);
 
 			setStatus("connecting");
 
