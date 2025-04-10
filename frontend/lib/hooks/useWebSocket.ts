@@ -130,9 +130,11 @@ export function useWebSocket(): UseWebSocketReturn {
 			reportIdRef.current = reportId;
 			const fullHost = getHost();
 			const protocol = fullHost.includes("https") ? "wss:" : "ws:";
+			// console.log("Protocol: ", protocol);
 			const cleanHost = fullHost
 				.replace("http://", "")
 				.replace("https://", "");
+			// console.log("cleanedHost: ", cleanHost);
 			const wsUrl = `${protocol}//${cleanHost}/ws/reports/${reportId}`;
 
 			// console.log("WS URL: ", wsUrl);

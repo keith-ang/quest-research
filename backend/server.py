@@ -35,7 +35,7 @@ app = FastAPI()
 # Enable CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], 
+    allow_origins=[os.getenv("NEXT_PUBLIC_APP_URL", "http://localhost:3000")], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -142,6 +142,8 @@ async def run_storm_with_retry(runner, topic, report_id):
         # We can't directly modify OpenAI's retry mechanism from here,
         # but we can wrap the run function in our own error handling
         
+        # maybe this function is not necessary but we can just replace with the runner.run() in `generate_article_in_background`
+        
         # Run STORM normally (it will do its own retries via the OpenAI client)
         runner.run(
             topic=topic,
@@ -198,10 +200,10 @@ async def generate_article_in_background(report_id: str, safe_topic: str, origin
             )
             
             # Wait for the runner to complete or timeout
-            await asyncio.wait_for(runner_task, timeout=300)  # 5 minute timeout
+            await asyncio.wait_for(runner_task, timeout=600)  # 10 minute timeout
             
         except asyncio.TimeoutError:
-            error_msg = f"STORM process timed out after 5 minutes for topic: {original_topic}"
+            error_msg = f"STORM process timed out after 10 minutes for topic: {original_topic}"
             logger.error(error_msg)
             
             await manager.send_update(report_id, {
