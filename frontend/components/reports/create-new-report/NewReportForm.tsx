@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import {
@@ -20,10 +20,20 @@ import { reportFormSchema } from "@/lib/validator";
 import { IReportForm } from "@/types";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useWebSocketContext } from "@/lib/contexts/WebSocketContext";
 
 export default function NewReportForm() {
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const isSubmittingRef = useRef(false);
 	const router = useRouter();
+	const {
+		connect,
+		status, // websocket connection status
+		setPersistentReportId,
+		persistentReportId,
+		disconnect,
+	} = useWebSocketContext();
+	const toastIdRef = useRef<string | number | null>(null);
 
 	const form = useForm({
 		resolver: zodResolver(reportFormSchema),
@@ -36,7 +46,35 @@ export default function NewReportForm() {
 		},
 	});
 
+	// // Only connect if disconnected to prevent infinite loop
+	// useEffect(() => {
+	// 	if (persistentReportId && status === "disconnected") {
+	// 		connect(persistentReportId);
+	// 	}
+	// }, [persistentReportId, connect, status]);
+
+	// Clean up on unmount - but don't disconnect if we want to maintain connection across pages
+	useEffect(() => {
+		return () => {
+			// Just dismiss any active toasts when navigating away
+			if (toastIdRef.current) {
+				toast.dismiss(toastIdRef.current);
+			}
+		};
+	}, []);
+
+	const isFormDisabled =
+		status === "connecting" ||
+		status === "connected" ||
+		isSubmitting ||
+		isSubmittingRef.current;
+
 	const onSubmit = async (values: IReportForm) => {
+		// Prevent multiple submissions or submission during active connection
+		if (isSubmittingRef.current || status !== "disconnected") return;
+
+		// Set both the ref and state
+		isSubmittingRef.current = true;
 		setIsSubmitting(true);
 
 		try {
@@ -58,92 +96,90 @@ export default function NewReportForm() {
 
 			const initialData = await initialResponse.json();
 			const reportId = initialData.reportId;
+			// Store report ID in context for persistence across pages
+			setPersistentReportId(reportId);
 
-			// Step 2: Redirect user to dashboard to see the "in progress" report
-			const toastId = toast.info("Report creation started!", {
+			// Step 2: Connect to WebSocket for this report
+			connect(reportId);
+
+			// Add a small delay to ensure WebSocket connection is established
+			await new Promise((resolve) => setTimeout(resolve, 1000));
+
+			// Step 3: Show initial toast
+			toastIdRef.current = toast.info("Report creation started!", {
 				description:
 					"Your report is being generated in the background. You'll be notified when it's ready.",
 				action: {
 					label: "Go to Dashboard",
 					onClick: () => {
-						toast.dismiss(toastId);
+						if (toastIdRef.current) {
+							toast.dismiss(toastIdRef.current);
+						}
 						router.push("/dashboard");
 					},
 				},
 				duration: Infinity,
 			});
 
-			// Step 3: Start the actual report generation process in the background
-			const generateFullReport = async () => {
-				try {
-					const response = await fetch(
-						`/api/reports/generate/${reportId}`,
-						{
-							method: "POST",
-							headers: {
-								"Content-Type": "application/json",
-							},
-							body: JSON.stringify(values),
-						}
-					);
-
-					if (!response.ok) {
-						throw new Error("Report generation failed");
-					}
-
-					const data = await response.json();
-
-					toast.dismiss(toastId);
-
-					// Step 3:
-					// Create a new persistent toast that remains visible on the report page
-					const successToastId = toast.success("Report Ready!", {
-						description:
-							"Your report has been successfully generated.",
-						action: {
-							label: "Dismiss",
-							onClick: () => toast.dismiss(successToastId),
-						},
-						duration: Infinity, // Toast will stay until user dismisses it
-					});
-
-					router.push(`/dashboard/${reportId}`);
-
-					return data;
-				} catch (error) {
-					toast.dismiss(toastId);
-					// Step 4: Handle failure - delete the placeholder and show error
-					await fetch(`/api/reports/${reportId}`, {
-						method: "DELETE",
-					});
-
-					toast.error(
-						`Failed to generate report: ${
-							error instanceof Error
-								? error.message
-								: "Unknown error"
-						}`,
-						{ duration: 5000 }
-					);
-
-					throw error; // Re-throw to handle in the outer catch if needed
+			// Step 4: Start the actual report generation process
+			const generateResponse = await fetch(
+				`/api/reports/generate/${reportId}`,
+				{
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify(values),
 				}
-			};
+			);
 
-			// Start the generation process without awaiting it
-			// This allows it to run in the background after redirect
-			generateFullReport().catch((error) => {
-				console.error("Background report generation failed:", error);
-			});
+			if (!generateResponse.ok) {
+				throw new Error("Failed to start report generation");
+			}
+
+			// Note: The WebSocket will continue to provide updates even after redirect
 		} catch (error) {
-			// Handle initial creation errors
+			// Handle errors
+			if (toastIdRef.current) {
+				toast.dismiss(toastIdRef.current);
+			}
+
 			toast.error(
 				error instanceof Error
 					? `Error: ${error.message}`
 					: "Something went wrong while creating your report"
 			);
+
+			// Clean up properly - disconnect WebSocket and clear ID
+			if (persistentReportId) {
+				disconnect();
+				setPersistentReportId(null);
+			}
 		} finally {
+			// Reset both the ref and state
+			isSubmittingRef.current = false;
 			setIsSubmitting(false);
+		}
+	};
+
+	// Get button text based on status
+	const getButtonText = () => {
+		if (isSubmitting) {
+			return (
+				<>
+					<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+					Creating Report...
+				</>
+			);
+		} else if (status === "connected" || status === "connecting") {
+			return (
+				<>
+					<Loader2 className="mr-2 h-4 w-4 animate-spin" />
+					Report in Progress...
+				</>
+			);
+		} else {
+			return "Create Report";
 		}
 	};
 
@@ -171,6 +207,7 @@ export default function NewReportForm() {
 							placeholder="Enter a detailed topic for your report..."
 							className="focus-visible:ring-violet-500 min-h-[100px]" // Added min-height
 							{...form.register("topic")}
+							disabled={isFormDisabled}
 						/>
 						{form.formState.errors.topic && (
 							<p className="text-sm text-red-500">
@@ -280,21 +317,21 @@ export default function NewReportForm() {
 						</div>
 					</div>
 				</CardContent>
-				<CardFooter>
+				<CardFooter className="flex flex-col">
 					<Button
 						type="submit"
 						className="w-full bg-violet-600 hover:bg-violet-700 text-white cursor-pointer"
-						disabled={isSubmitting}
+						disabled={isFormDisabled || form.formState.isSubmitting}
 					>
-						{isSubmitting ? (
-							<>
-								<Loader2 className="mr-2 h-4 w-4 animate-spin" />
-								Creating Report...
-							</>
-						) : (
-							"Create Report"
-						)}
+						{getButtonText()}
 					</Button>
+
+					{status === "connected" && (
+						<p className="mt-2 text-sm text-gray-800 dark:text-gray-200">
+							Report generation in progress. You can navigate away
+							from this page.
+						</p>
+					)}
 				</CardFooter>
 			</form>
 		</Card>

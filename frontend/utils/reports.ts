@@ -1,4 +1,5 @@
 import { ReportSection } from "@/types";
+import { toast } from "sonner";
 
 // Parse the Markdown sections with hierarchy support
 export const parseReportContent = (content: string): ReportSection[] => {
@@ -85,4 +86,61 @@ const getFormattedTitle = (
 	}
 	// For h2 and lower, format as "Parent > Child"
 	return `${parentTitle} > ${title}`;
+};
+
+export const updateReportWithWebSocketData = async (
+	reportId: string,
+	data: {
+		raw_content: string;
+		processed_content: string;
+		// eslint-disable-next-line  @typescript-eslint/no-explicit-any
+		references: any;
+	}
+) => {
+	try {
+		console.log("Making PATCH request to update report", reportId);
+		const response = await fetch(`/api/reports/${reportId}`, {
+			method: "PATCH",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				rawReportContent: data.raw_content,
+				processedReportContent: data.processed_content,
+				references: data.references,
+				status: "completed",
+			}),
+		});
+
+		if (!response.ok) {
+			throw new Error("Failed to update report with generated content");
+		}
+
+		console.log("Report updated successfully");
+		toast.success("Report updated successfully");
+		return true;
+	} catch (error) {
+		console.error("Error updating report:", error);
+		toast.error("Failed to update report with generated content");
+		return false;
+	}
+};
+
+export const deletePlaceholderReport = async (reportId: string) => {
+	try {
+		console.log("Deleting placeholder report:", reportId);
+		const response = await fetch(`/api/reports/${reportId}`, {
+			method: "DELETE",
+		});
+
+		if (!response.ok) {
+			throw new Error(`Failed to delete report: ${response.status}`);
+		}
+
+		console.log("Placeholder report deleted successfully");
+		return true;
+	} catch (error) {
+		console.error("Error deleting placeholder report:", error);
+		throw error;
+	}
 };

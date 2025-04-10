@@ -2,11 +2,12 @@ import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import "./globals.css";
 import Header from "../components/shared/Header";
-import Footer from "../components/shared/Footer";
+// import Footer from "../components/shared/Footer";
 import { ClerkProvider } from "@clerk/nextjs";
 import { ThemeProvider } from "../components/theme-provider";
 import { Toaster } from "sonner";
 import { WebSocketProvider } from "@/lib/contexts/WebSocketContext";
+import { ReportCleanup } from "@/components/ReportCleanup";
 
 const poppins = Poppins({
 	variable: "--font-poppins",
@@ -35,6 +36,7 @@ export default function RootLayout({
 					className={`${poppins.variable} antialiased vsc-initialized`}
 				>
 					<WebSocketProvider>
+						<ReportCleanup />
 						<ThemeProvider
 							attribute="class"
 							enableSystem

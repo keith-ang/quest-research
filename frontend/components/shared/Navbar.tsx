@@ -2,7 +2,7 @@ import { Menu } from "lucide-react";
 import React from "react";
 import NavLink from "./NavLink";
 import { APP_NAME, APP_NAME2 } from "@/lib/constants";
-import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
+import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import DarkModeToggle from "./DarkModeToggle";
