@@ -55,6 +55,7 @@ The project follows a modular architecture with two main components:
 -   Azure OpenAI API keys
 -   Serper API key
 -   ngrok (for Clerk webhook development setup)
+-   Docker (for containerized setup)
 
 ### Environment Setup
 
@@ -78,7 +79,7 @@ AZURE_API_VERSION=your_azure_api_version
 SERPER_API_KEY=your_serper_api_key
 ```
 
-## Clerk Webhook Configuration
+### Clerk Webhook Configuration (For development on Public URL only)
 
 For the application to handle user events properly, you need to set up a Clerk webhook:
 
@@ -123,7 +124,24 @@ For the application to handle user events properly, you need to set up a Clerk w
 
 This setup allows Clerk to communicate user events to your local development environment.
 
-### Installation and Setup
+## Installation and Setup
+
+### Option 1: Docker Installation (Recommended)
+
+Make sure Docker and Docker Compose are installed on your system.
+Set up your environment variables in the .env file as described above.
+From the project root, run:
+
+```bash
+docker-compose up # (or `docker compose up`)
+```
+
+This will build and start both the frontend and backend containers:
+
+Frontend will be available at http://localhost:3000
+Backend will be available at http://localhost:8000
+
+### Option 2: Manual Installation
 
 #### Frontend (Next.js)
 
@@ -167,19 +185,13 @@ This setup allows Clerk to communicate user events to your local development env
     pip install -r requirements.txt
     ```
 
-3. Navigate to the backend directory:
-
-    ```bash
-    cd backend
-    ```
-
-4. Start the FastAPI server:
+3. Start the FastAPI server in the project root:
 
     ```bash
     uvicorn main:app --reload
     ```
 
-5. The FastAPI server will be available at `http://localhost:8000`
+4. The FastAPI server will be available at `http://localhost:8000`
 
 ## Data Flow
 
