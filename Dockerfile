@@ -1,25 +1,25 @@
-FROM python:3.10
+FROM python:3.11-slim
 
 WORKDIR /app
 
-# Copy requirements file
+# Install build dependencies needed for NumPy and other packages with C extensions
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements first to leverage Docker cache
 COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Install dependencies, filtering out Windows-specific packages
-RUN grep -v "pywin32" requirements.txt > requirements-linux.txt && \
-    pip install --no-cache-dir -r requirements-linux.txt
+# Copy the rest of the application
+COPY . .
 
-# Copy the backend directory
-COPY ./backend ./backend
+# Make sure backend directory is in Python path
+ENV PYTHONPATH="/app"
 
-# Create necessary directories
-RUN mkdir -p /app/backend/storage
-
-# Set environment variables
-ENV STORAGE_PATH="/app/backend/storage"
-
-# Expose port 8000
+# Expose FastAPI port
 EXPOSE 8000
 
 # Command to run the application
-CMD ["python", "-m", "uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

@@ -31,10 +31,10 @@ export function ReportCleanup() {
 		if (cleanupAttemptedRef.current || !persistentReportId) return;
 
 		cleanupAttemptedRef.current = true;
-		console.log(
-			"Performing comprehensive cleanup for report:",
-			persistentReportId
-		);
+		// console.log(
+		// 	"Performing comprehensive cleanup for report:",
+		// 	persistentReportId
+		// );
 
 		// Disconnect WebSocket
 		disconnect();
@@ -42,7 +42,7 @@ export function ReportCleanup() {
 		// Clear persistent report ID
 		setPersistentReportId(null);
 
-		console.log("Cleaned up connections and report ID");
+		// console.log("Cleaned up connections and report ID");
 	}, [persistentReportId, disconnect, setPersistentReportId]);
 
 	// Handle successful report completion - with guard to prevent multiple executions
@@ -56,7 +56,7 @@ export function ReportCleanup() {
 			// Mark this update as performed so we don't do it again
 			updatePerformedRef.current = true;
 
-			console.log("Globally updating report with completed chunks");
+			// console.log("Globally updating report with completed chunks");
 			const rawContent = contentChunks.raw_content.join("");
 			const processedContent = contentChunks.processed_content.join("");
 			const references = contentChunks.references;
@@ -106,10 +106,10 @@ export function ReportCleanup() {
 			persistentReportId &&
 			!deletionAttemptedRef.current.has(persistentReportId)
 		) {
-			console.log(
-				"Received should_delete flag for report:",
-				persistentReportId
-			);
+			// console.log(
+			// 	"Received should_delete flag for report:",
+			// 	persistentReportId
+			// );
 
 			// Mark this report as having a deletion attempt
 			deletionAttemptedRef.current.add(persistentReportId);
@@ -152,7 +152,7 @@ export function ReportCleanup() {
 			persistentReportId &&
 			!cleanupAttemptedRef.current
 		) {
-			console.log("WebSocket disconnected, initiating cleanup");
+			// console.log("WebSocket disconnected, initiating cleanup");
 			const timer = setTimeout(performCleanup, 5000);
 			return () => clearTimeout(timer);
 		}

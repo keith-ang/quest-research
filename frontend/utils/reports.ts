@@ -98,7 +98,7 @@ export const updateReportWithWebSocketData = async (
 	}
 ) => {
 	try {
-		console.log("Making PATCH request to update report", reportId);
+		// console.log("Making PATCH request to update report", reportId);
 		const response = await fetch(`/api/reports/${reportId}`, {
 			method: "PATCH",
 			headers: {
@@ -116,7 +116,7 @@ export const updateReportWithWebSocketData = async (
 			throw new Error("Failed to update report with generated content");
 		}
 
-		console.log("Report updated successfully");
+		// console.log("Report updated successfully");
 		toast.success("Report updated successfully");
 		return true;
 	} catch (error) {
@@ -128,7 +128,7 @@ export const updateReportWithWebSocketData = async (
 
 export const deletePlaceholderReport = async (reportId: string) => {
 	try {
-		console.log("Deleting placeholder report:", reportId);
+		// console.log("Deleting placeholder report:", reportId);
 		const response = await fetch(`/api/reports/${reportId}`, {
 			method: "DELETE",
 		});
@@ -137,7 +137,7 @@ export const deletePlaceholderReport = async (reportId: string) => {
 			throw new Error(`Failed to delete report: ${response.status}`);
 		}
 
-		console.log("Placeholder report deleted successfully");
+		// console.log("Placeholder report deleted successfully");
 		return true;
 	} catch (error) {
 		console.error("Error deleting placeholder report:", error);

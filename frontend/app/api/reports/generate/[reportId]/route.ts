@@ -78,8 +78,7 @@ export async function POST(
 		const formData: IReportForm = parseResult.data;
 
 		console.log("Processing report with topic:", formData.topic);
-		const apiUrl =
-			process.env.NEXT_PUBLIC_STORM_API_URL || "http://localhost:8000";
+		const apiUrl = process.env.STORM_API_URL || "http://localhost:8000";
 		console.log(`Calling API URL: ${apiUrl}`);
 
 		// Call FastAPI route to generate report content and references

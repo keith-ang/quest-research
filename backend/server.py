@@ -347,6 +347,9 @@ async def create_article(article_create: ArticleCreate, background_tasks: Backgr
         logger.info(f"Received article creation request for topic: {article_create.topic}")
         report_id = article_create.report_id
         
+        # Add a small delay to allow WebSocket connection to be established
+        await asyncio.sleep(1)
+        
         # Send initial processing status
         await manager.send_update(report_id, {
             "event": "processing_started",
@@ -396,7 +399,10 @@ async def create_article(article_create: ArticleCreate, background_tasks: Backgr
 
 @app.websocket("/ws/reports/{report_id}")
 async def websocket_endpoint(websocket: WebSocket, report_id: str):
+    logger.info(f"Received WebSocket connection request for report {report_id}")
     connection_id = await manager.connect(websocket, report_id)
+    logger.info(f"WebSocket connected for report {report_id} with connection_id {connection_id}")
+
     try:
         # Send initial connection confirmation
         await websocket.send_json({

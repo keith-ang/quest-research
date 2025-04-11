@@ -5,15 +5,17 @@ services:
             dockerfile: Dockerfile
         ports:
             - "8000:8000"
-        volumes:
-            - ./backend:/app/backend
-            - ./backend/storage:/app/backend/storage
         environment:
-            - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
             - AZURE_API_KEY=${AZURE_API_KEY}
             - AZURE_API_BASE=${AZURE_API_BASE}
             - AZURE_API_VERSION=${AZURE_API_VERSION}
             - SERPER_API_KEY=${SERPER_API_KEY}
+        volumes:
+            - ./backend:/app/backend
+            - ./articles:/app/articles
+            - ./storage:/app/storage
+            - ./logs:/app/logs
+        restart: unless-stopped
         networks:
             - app-network
 
@@ -23,18 +25,21 @@ services:
             dockerfile: Dockerfile.dev
         ports:
             - "3000:3000"
-        volumes:
-            - ./frontend:/app
-            - /app/node_modules
         environment:
             - NODE_ENV=${NODE_ENV}
-            - STORM_API_URL=${STORM_API_URL}
+            - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
+            - NEXT_PUBLIC_STORM_API_URL=${NEXT_PUBLIC_STORM_API_URL}
+            - STORM_API_URL=http://backend:8000
             - NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
             - CLERK_SECRET_KEY=${CLERK_SECRET_KEY}
             - CLERK_WEBHOOK_SECRET=${CLERK_WEBHOOK_SECRET}
             - MONGODB_URI=${MONGODB_URI}
+        volumes:
+            - ./frontend:/app
+            - /app/node_modules
         depends_on:
             - backend
+        restart: unless-stopped
         networks:
             - app-network
 
