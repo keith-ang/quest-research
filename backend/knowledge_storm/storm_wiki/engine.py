@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 import logging
 import os
@@ -351,6 +352,7 @@ class STORMWikiRunner(Engine):
     def run(
         self,
         topic: str,
+        article_dir: str = None,  # Add this parameter
         ground_truth_url: str = "",
         do_research: bool = True,
         do_generate_outline: bool = True,
@@ -384,14 +386,13 @@ class STORMWikiRunner(Engine):
         ), makeStringRed(
             "No action is specified. Please set at least one of --do-research, --do-generate-outline, --do-generate-article, --do-polish-article"
         )
+        
+            # Ensure report_id is provided
+        if article_dir is None:
+            raise ValueError("article_dir must be provided")
 
         self.topic = topic
-        self.article_dir_name = truncate_filename(
-            topic.replace(" ", "_").replace("/", "_")
-        )
-        self.article_output_dir = os.path.join(
-            self.args.output_dir, self.article_dir_name
-        )
+        self.article_output_dir = article_dir
         os.makedirs(self.article_output_dir, exist_ok=True)
 
         # research module

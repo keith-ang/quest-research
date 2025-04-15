@@ -10,13 +10,11 @@ from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
 
 from .websocket_manager import ConnectionManager
-from .models import ArticleCreate, ArticleResponse
+from .models import ArticleCreate
 from .logger import logger
 from .server_utils import (
     initialize_storm_runner,
     generate_article_in_background,
-    sanitize_topic,
-    STORAGE_PATH
 )
 
 sys.path.append('../../')
@@ -72,16 +70,11 @@ async def create_article(article_create: ArticleCreate, background_tasks: Backgr
             "message": "Starting report generation"
         })
         
-        # Handle topic sanitization
-        safe_topic = sanitize_topic(article_create.topic)
-        logger.info(f"The safe topic is: {safe_topic}")
-        
         # Schedule the background task
         background_tasks.add_task(
             generate_article_in_background,
             report_id=report_id,
-            safe_topic=safe_topic,
-            original_topic=article_create.topic,
+            topic=article_create.topic,
             report_language=article_create.report_language,
             runner=runner,
             manager=manager

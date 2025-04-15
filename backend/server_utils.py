@@ -3,6 +3,7 @@ import json
 import os
 import re
 import traceback
+from datetime import datetime
 
 from .logger import logger
 
@@ -72,10 +73,10 @@ def initialize_storm_runner():
         logger.error(traceback.format_exc())
         return None
 
-def process_references(content: str, topic_dir: str) -> str:
+def process_references(content: str, article_dir: str) -> str:
     """Process and insert references into the article content."""
     try:
-        with open(os.path.join(topic_dir, "url_to_info.json"), 'r') as f:
+        with open(os.path.join(article_dir, "url_to_info.json"), 'r') as f:
             references = json.load(f)
             
         # Replace citation markers with proper references
@@ -85,13 +86,13 @@ def process_references(content: str, topic_dir: str) -> str:
             
         return content
     except FileNotFoundError:
-        logger.warning(f"References file not found in {topic_dir}")
+        logger.warning(f"References file not found in {article_dir}")
         return content
     except Exception as e:
         logger.error(f"Error processing references: {str(e)}")
         return content
 
-async def run_storm_with_retry(runner, topic, report_id, report_language, manager):
+async def run_storm_with_retry(runner, topic, report_id, article_dir, report_language, manager):
     """Run STORM with limited retries for API calls"""
     if runner is None:
         raise ValueError("STORM Runner is not initialized")
@@ -106,6 +107,7 @@ async def run_storm_with_retry(runner, topic, report_id, report_language, manage
         # Run STORM normally (it will do its own retries via the OpenAI client)
         runner.run(
             topic=topic,
+            article_dir=article_dir,
             do_research=True,
             do_generate_outline=True,
             do_generate_article=True,
@@ -136,7 +138,7 @@ async def run_storm_with_retry(runner, topic, report_id, report_language, manage
         })
         raise e
 
-async def generate_article_in_background(report_id: str, safe_topic: str, original_topic: str, report_language: str, runner, manager):
+async def generate_article_in_background(report_id: str, topic: str, report_language: str, runner, manager):
     try:
         # Update client that research is starting
         await manager.send_update(report_id, {
@@ -145,16 +147,20 @@ async def generate_article_in_background(report_id: str, safe_topic: str, origin
             "message": "Starting research phase"
         })
         
-        logger.info(f"Starting STORM runner for topic: {original_topic} in language: {report_language}")
+        logger.info(f"Starting STORM runner for topic: {topic} in language: {report_language}")
         
         # Set a timeout for the STORM process
         try:
+            current_datetime = datetime.now().strftime("%Y%m%d_%H%M%S")
+            article_dir = os.path.join(STORAGE_PATH, f"{current_datetime}_{report_id}")
+            
             # Run the STORM process with a timeout
             runner_task = asyncio.create_task(
                 run_storm_with_retry(
                     runner=runner,
-                    topic=safe_topic.replace("_", " "),
+                    topic=topic,
                     report_id=report_id,
+                    article_dir=article_dir,
                     report_language=report_language, 
                     manager=manager
                 )
@@ -164,7 +170,7 @@ async def generate_article_in_background(report_id: str, safe_topic: str, origin
             await asyncio.wait_for(runner_task, timeout=600)  # 10 minute timeout
             
         except asyncio.TimeoutError:
-            error_msg = f"STORM process timed out after 10 minutes for topic: {original_topic}"
+            error_msg = f"STORM process timed out after 10 minutes for topic: {topic}"
             logger.error(error_msg)
             
             await manager.send_update(report_id, {
@@ -197,11 +203,11 @@ async def generate_article_in_background(report_id: str, safe_topic: str, origin
             return
         
         # Continue with the rest of the original function after successful STORM run
-        logger.info(f"STORM runner completed for topic: {original_topic}")
+        logger.info(f"STORM runner completed for topic: {topic}")
         
         # Get the generated content
-        topic_dir = os.path.join(STORAGE_PATH, safe_topic)
-        content_file = os.path.join(topic_dir, "storm_gen_article_polished.txt")
+
+        content_file = os.path.join(article_dir, "storm_gen_article_polished.txt")
         
         if not os.path.exists(content_file):
             error_msg = f"Content file not found at {content_file}"
@@ -239,9 +245,9 @@ async def generate_article_in_background(report_id: str, safe_topic: str, origin
             logger.warning("Using replacement characters for undecodable bytes")
         
         # Process references
-        processed_content = process_references(raw_content, topic_dir)
+        processed_content = process_references(raw_content, article_dir)
         
-        references_file = os.path.join(topic_dir, "url_to_info.json")
+        references_file = os.path.join(article_dir, "url_to_info.json")
         references = {}
         try:
             with open(references_file, "r", encoding='utf-8') as f:
@@ -249,7 +255,7 @@ async def generate_article_in_background(report_id: str, safe_topic: str, origin
         except Exception as e:
             logger.warning(f"Could not load references: {str(e)}")
         
-        logger.info(f"Successfully processed article for topic: {original_topic}")
+        logger.info(f"Successfully processed article for topic: {topic}")
         
         # Notify of completion via WebSocket
         try:
@@ -300,12 +306,3 @@ async def generate_article_in_background(report_id: str, safe_topic: str, origin
         # Clean up connections on error after a delay
         await asyncio.sleep(5)
         await manager.cleanup_connections_for_report(report_id)
-
-def sanitize_topic(topic: str) -> str:
-    """Sanitize topic string for safe file naming"""
-    safe_topic = re.sub(r'[^a-zA-Z0-9]', '_', topic)
-    safe_topic = re.sub(r'_+', '_', safe_topic)
-    safe_topic = safe_topic.strip('_')
-    if not safe_topic:
-        safe_topic = "placeholder_topic"
-    return safe_topic
