@@ -3,21 +3,19 @@ import json
 import os
 import re
 import traceback
-from typing import Dict, Any
 
 from .logger import logger
-from .websocket_manager import ConnectionManager
 
 # Add this near the top with other imports
 from openai import APITimeoutError, RateLimitError, APIError
 
-from knowledge_storm import (
+from .knowledge_storm import (
     STORMWikiRunnerArguments,
     STORMWikiRunner,
     STORMWikiLMConfigs,
 )
-from knowledge_storm.lm import AzureOpenAIModel
-from knowledge_storm.rm import SerperRM
+from .knowledge_storm.lm import AzureOpenAIModel
+from .knowledge_storm.rm import SerperRM
 
 # Data storage path
 STORAGE_PATH = "articles"
@@ -59,6 +57,7 @@ def initialize_storm_runner():
             max_perspective=3,
             search_top_k=3,
             retrieve_top_k=5,
+            report_language="English"
         )
 
         rm = SerperRM(
