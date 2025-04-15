@@ -4,6 +4,7 @@ from pydantic import BaseModel
 class ArticleCreate(BaseModel):
     topic: str
     report_id: str  # Add this to identify the report for WebSocket updates
+    report_language: str
 
 
 class ArticleResponse(BaseModel):

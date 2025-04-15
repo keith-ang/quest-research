@@ -21,6 +21,14 @@ import { IReportForm } from "@/types";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useWebSocketContext } from "@/lib/contexts/WebSocketContext";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/ui/select";
+import { AVAILABLE_LANGUAGES } from "@/lib/constants";
 
 export default function NewReportForm() {
 	const [isSubmitting, setIsSubmitting] = useState(false);
@@ -43,15 +51,9 @@ export default function NewReportForm() {
 			do_generate_outline: true,
 			do_generate_article: true,
 			do_polish_article: true,
+			report_language: "English",
 		},
 	});
-
-	// // Only connect if disconnected to prevent infinite loop
-	// useEffect(() => {
-	// 	if (persistentReportId && status === "disconnected") {
-	// 		connect(persistentReportId);
-	// 	}
-	// }, [persistentReportId, connect, status]);
 
 	// Clean up on unmount - but don't disconnect if we want to maintain connection across pages
 	useEffect(() => {
@@ -87,6 +89,7 @@ export default function NewReportForm() {
 				body: JSON.stringify({
 					topic: values.topic,
 					status: "in progress",
+					report_language: values.report_language, // Include language in placeholder
 				}),
 			});
 
@@ -212,6 +215,39 @@ export default function NewReportForm() {
 						{form.formState.errors.topic && (
 							<p className="text-sm text-red-500">
 								{form.formState.errors.topic.message}
+							</p>
+						)}
+					</div>
+
+					{/* Language Selection */}
+					<div className="space-y-4">
+						<Label
+							htmlFor="report_language"
+							className="text-gray-700 dark:text-gray-200"
+						>
+							Report Language
+						</Label>
+						<Select
+							disabled={isFormDisabled}
+							value={form.watch("report_language")}
+							onValueChange={(value) =>
+								form.setValue("report_language", value)
+							}
+						>
+							<SelectTrigger className="w-full focus-visible:ring-violet-500">
+								<SelectValue placeholder="Select language" />
+							</SelectTrigger>
+							<SelectContent>
+								{AVAILABLE_LANGUAGES.map((language) => (
+									<SelectItem key={language} value={language}>
+										{language}
+									</SelectItem>
+								))}
+							</SelectContent>
+						</Select>
+						{form.formState.errors.report_language && (
+							<p className="text-sm text-red-500">
+								{form.formState.errors.report_language.message}
 							</p>
 						)}
 					</div>

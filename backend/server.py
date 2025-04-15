@@ -59,7 +59,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 @app.post("/api/articles")
 async def create_article(article_create: ArticleCreate, background_tasks: BackgroundTasks):
     try:
-        logger.info(f"Received article creation request for topic: {article_create.topic}")
+        logger.info(f"Received article creation request for topic: {article_create.topic} in language: {article_create.report_language}")
         report_id = article_create.report_id
         
         # Add a small delay to allow WebSocket connection to be established
@@ -82,6 +82,7 @@ async def create_article(article_create: ArticleCreate, background_tasks: Backgr
             report_id=report_id,
             safe_topic=safe_topic,
             original_topic=article_create.topic,
+            report_language=article_create.report_language,
             runner=runner,
             manager=manager
         )

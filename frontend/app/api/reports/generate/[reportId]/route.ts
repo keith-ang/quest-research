@@ -91,6 +91,7 @@ export async function POST(
 			body: JSON.stringify({
 				topic: formData.topic,
 				report_id: reportId, // Include report_id for WebSocket updates
+				report_language: formData.report_language,
 				// can add more params in future
 			}),
 		});

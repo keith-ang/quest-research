@@ -91,12 +91,18 @@ def process_references(content: str, topic_dir: str) -> str:
         logger.error(f"Error processing references: {str(e)}")
         return content
 
-async def run_storm_with_retry(runner, topic, report_id, manager):
+async def run_storm_with_retry(runner, topic, report_id, report_language, manager):
     """Run STORM with limited retries for API calls"""
     if runner is None:
         raise ValueError("STORM Runner is not initialized")
         
     try:
+        # Update the runner's language setting
+        if report_language != "English":
+            # The args attribute contains the STORMWikiRunnerArguments object
+            runner.args.report_language = report_language
+            logger.info(f"Successfully updated STORM runner to use language: {report_language}")
+        
         # Run STORM normally (it will do its own retries via the OpenAI client)
         runner.run(
             topic=topic,
@@ -130,7 +136,7 @@ async def run_storm_with_retry(runner, topic, report_id, manager):
         })
         raise e
 
-async def generate_article_in_background(report_id: str, safe_topic: str, original_topic: str, runner, manager):
+async def generate_article_in_background(report_id: str, safe_topic: str, original_topic: str, report_language: str, runner, manager):
     try:
         # Update client that research is starting
         await manager.send_update(report_id, {
@@ -139,7 +145,7 @@ async def generate_article_in_background(report_id: str, safe_topic: str, origin
             "message": "Starting research phase"
         })
         
-        logger.info(f"Starting STORM runner for topic: {original_topic}")
+        logger.info(f"Starting STORM runner for topic: {original_topic} in language: {report_language}")
         
         # Set a timeout for the STORM process
         try:
@@ -149,6 +155,7 @@ async def generate_article_in_background(report_id: str, safe_topic: str, origin
                     runner=runner,
                     topic=safe_topic.replace("_", " "),
                     report_id=report_id,
+                    report_language=report_language, 
                     manager=manager
                 )
             )

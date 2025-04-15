@@ -8,4 +8,5 @@ export const reportFormSchema = z.object({
 	do_generate_outline: z.boolean().default(true),
 	do_generate_article: z.boolean().default(true),
 	do_polish_article: z.boolean().default(true),
+	report_language: z.string().default("English"),
 });
